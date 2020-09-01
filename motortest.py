@@ -7,9 +7,9 @@ try:
     motors.enable()
     motors.setSpeeds(0, 0)
 
-    print("Motor 1 test")
+    print("Motor 2 test")
     for s in SPEEDS:
-        motors.motor1.setSpeed(s)
+        motors.motor2.setSpeed(s)
         time.sleep(0.100)
 finally:
   # Stop the motors, even if there is an exception
