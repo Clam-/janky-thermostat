@@ -10,7 +10,7 @@ try:
     print("Motor 1 test")
     for s in SPEEDS:
         motors.motor1.setSpeed(s)
-        time.sleep(0.005)
+        time.sleep(0.100)
 finally:
   # Stop the motors, even if there is an exception
   # or the user presses Ctrl+C to kill the process.
