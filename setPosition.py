@@ -34,13 +34,13 @@ try:
 
     while chan.value < MIN:
         motors.motor2.setSpeed(100)
-        print("{:>5}\t{:>5.3f}".format(chan.value, chan.voltage))
-        sleep(80)
+        print("\r{:>5}\t{:>5.3f}".format(chan.value, chan.voltage), end="")
+        sleep(0.1)
     motors.setSpeeds(0, 0)
     while chan.value > MAX:
         motors.motor2.setSpeed(-100)
-        print("{:>5}\t{:>5.3f}".format(chan.value, chan.voltage))
-        sleep(80)
+        print("\r{:>5}\t{:>5.3f}".format(chan.value, chan.voltage), end="")
+        sleep(0.1)
     motors.setSpeeds(0, 0)
 finally:
   # Stop the motors, even if there is an exception
