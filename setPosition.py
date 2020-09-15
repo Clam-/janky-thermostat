@@ -11,8 +11,8 @@ if len(argv) != 2:
     exit(1)
 
 try:
-    POS = int(argv)
-except ValueError:
+    POS = int(argv[1])
+except:
     print("Invalid position")
     exit(1)
 # set sane min/max (even though linear actuator will stop at the ends.)
