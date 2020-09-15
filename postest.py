@@ -11,7 +11,7 @@ ads = ADS.ADS1015(i2c)
 # Create single-ended input on channel 0
 chan = AnalogIn(ads, ADS.P0)
 
-print("\r{:>5}\t{:>5}".format('raw', 'v'), end="")
+print("{:>5}\t{:>5}".format('raw', 'v'))
 
 while True:
     print("\r{:>5}\t{:>5.3f}".format(chan.value, chan.voltage), end="")
