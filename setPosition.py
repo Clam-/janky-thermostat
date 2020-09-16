@@ -31,17 +31,16 @@ try:
     motors.setSpeeds(0, 0)
     motors.enable()
 
-
-    while chan.value < MIN:
-        motors.motor2.setSpeed(100)
-        print("\r{:>5}\t{:>5.3f}".format(chan.value, chan.voltage), end="")
-        sleep(0.1)
-    motors.setSpeeds(0, 0)
-    while chan.value > MAX:
-        motors.motor2.setSpeed(-100)
-        print("\r{:>5}\t{:>5.3f}".format(chan.value, chan.voltage), end="")
-        sleep(0.1)
-    motors.setSpeeds(0, 0)
+    if chan.value < MIN:
+        motors.motor2.setSpeed(200)
+        while chan.value < MIN:
+            print("\r{:>5}\t{:>5.3f}".format(chan.value, chan.voltage), end="")
+        motors.setSpeeds(0, 0)
+    if chan.value > MAX:
+        motors.motor2.setSpeed(-200)
+        while chan.value > MAX:
+            print("\r{:>5}\t{:>5.3f}".format(chan.value, chan.voltage), end="")
+        motors.setSpeeds(0, 0)
 finally:
   # Stop the motors, even if there is an exception
   # or the user presses Ctrl+C to kill the process.
