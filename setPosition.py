@@ -1,5 +1,5 @@
 from sys import argv, exit
-from dual_mc33926_rpi import motors, MAX_SPEED
+from dual_mc33926 import motors
 from time import sleep
 from board import SCL, SDA
 from busio import I2C

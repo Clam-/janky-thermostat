@@ -1,6 +1,12 @@
 # Run this at boot to continuously poll and adjust temp.
 from prometheus_client import start_http_server, Gauge, Enum
 from simple_pid import PID
+from dual_mc33926 import motors
+import board
+import busio
+from adafruit_ads1x15.ads1015 import ADS1015, P0
+from adafruit_ads1x15.analog_in import AnalogIn
+
 import time
 import os.path
 import sqlite3
@@ -8,6 +14,8 @@ import sqlite3
 prometheus_client.REGISTRY.unregister(prometheus_client.GC_COLLECTOR)
 prometheus_client.REGISTRY.unregister(prometheus_client.PLATFORM_COLLECTOR)
 prometheus_client.REGISTRY.unregister(prometheus_client.PROCESS_COLLECTOR)
+
+POS = AnalogIn(ADS1015(busio.I2C(board.SCL, board.SDA)), P0)
 
 # use implied rowid
 TABLE_CREATE = "CREATE TABLE setting(target_temp REAL, last_position INT, onoff INT, \
@@ -24,6 +32,8 @@ SETTING_DEFAULTS = {
     "upper": 24600
 }
 UPDATE_RATE = 10
+POS_MARGIN = 2
+SPEED = 100
 
 # Metric reportings
 class Stats:
@@ -84,6 +94,34 @@ settings = Settings(pid)
 
 lastupdate = time.monotonic()
 
+def goUp(target):
+    motors.motor2.setSpeed(SPEED)
+    while POS.value < target-POS_MARGIN:
+        pass
+
+def goDown(target):
+    motors.motor2.setSpeed(-SPEED)
+    while POS.value > target+POS_MARGIN:
+        pass
+
+def go(target):
+    try:
+        motors.setSpeeds(0, 0)
+        motors.enable()
+
+        if target < POS.value: goUp(target)
+        if target > POS.value: goDown(target)
+        motors.setSpeeds(0, 0)
+    finally:
+      # Stop the motors, even if there is an exception
+      # or the user presses Ctrl+C to kill the process.
+      motors.setSpeeds(0, 0)
+      motors.disable()
+
+
+
+
+
 if __name__ == '__main__':
     # Start up the server to expose the metrics.
     start_http_server(8000)
@@ -95,7 +133,7 @@ if __name__ == '__main__':
         newpos = pid()
         if newpos != lastpos: settings.updatePostion(newpos) # store new location
         # move to new setpoint
-
+        chan.value
 
         # check for updated SQL values
         settings.update()
