@@ -70,9 +70,11 @@ class Settings:
         res = self.con.execute('''SELECT name FROM sqlite_master WHERE type='table' AND name='setting';''').fetchone()
         if res is None:
             self.con.execute(TABLE_CREATE)
+            self.con.commit()
         res = self.con.execute('''SELECT * FROM setting WHERE rowid=1;''').fetchone()
         if res is None:
             self.con.execute(ROW_CREATE, SETTING_DEFAULTS)
+            self.con.commit()
 
     def update(self, startup=False):
         # query SQLite
@@ -93,6 +95,7 @@ class Settings:
 
     def updatePostion(self, pos):
         self.con.execute('''UPDATE setting SET last_position = ? WHERE rowid=1;''', pos)
+        self.con.commit()
         self.stats.position = pos
 
 
