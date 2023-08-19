@@ -16,7 +16,7 @@ prometheus_client.REGISTRY.unregister(prometheus_client.GC_COLLECTOR)
 prometheus_client.REGISTRY.unregister(prometheus_client.PLATFORM_COLLECTOR)
 prometheus_client.REGISTRY.unregister(prometheus_client.PROCESS_COLLECTOR)
 
-i2c = busio.I2C(board.SCL, board.SDA)
+i2c = busio.I2C(board.D1, board.D0)  # using i2c0
 POS = AnalogIn(ADS1015(i2c), P0)
 TEMP = adafruit_sht4x.SHT4x(i2c)
 TEMP.mode = adafruit_sht4x.Mode.NOHEAT_HIGHPRECISION
@@ -138,7 +138,7 @@ if __name__ == '__main__':
     while True:
         currentupdate = time.monotonic()
         # measure
-        temp, humidity = sht.measurements
+        temp, humidity = TEMP.measurements
         # Do things...
         newpos = pid(temp)
         if newpos != lastpos: settings.updatePostion(newpos, stats) # store new location
@@ -146,14 +146,8 @@ if __name__ == '__main__':
         go(newpos)
 
         # Log stats...
-        Stats.temp.set = temp
-        Stats.humidity.set = humidity
-        Stats.temp.set = temp
-        Stats.humidity.set = humidity
-        Stats.temp.set = temp
-        Stats.humidity.set = humidity
-        Stats.temp.set = temp
-        Stats.humidity.set = humidity
+        stats.temp.set = temp
+        stats.humidity.set = humidity
 
         # check for updated SQL values
         settings.update(stats)
