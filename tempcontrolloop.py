@@ -38,6 +38,8 @@ SETTING_DEFAULTS = {
 UPDATE_RATE = 10
 POS_MARGIN = 2
 SPEED = 100
+UPSPEED = -SPEED
+DOWNSPEED = SPEED
 
 # Metric reportings
 class Stats:
@@ -115,12 +117,12 @@ settings = Settings(pid, stats)
 lastupdate = time.monotonic()
 
 def goUp(target):
-    motors.motor2.setSpeed(SPEED)
+    motors.motor2.setSpeed(UPSPEED)
     while POS.value < target-POS_MARGIN:
         pass
 
 def goDown(target):
-    motors.motor2.setSpeed(-SPEED)
+    motors.motor2.setSpeed(DOWNSPEED)
     print(f"Target: {target} Pos: {POS.value} Margin: {POS_MARGIN} Total: {target+POS_MARGIN} bool: {POS.value > target+POS_MARGIN}")
     while POS.value > target+POS_MARGIN:
         print(f"Target: {target} Pos: {POS.value} Margin: {POS_MARGIN} Total: {target+POS_MARGIN} bool: {POS.value > target+POS_MARGIN}")
@@ -132,8 +134,8 @@ def go(target):
         motors.setSpeeds(0, 0)
         motors.enable()
         # use asyncio to set a timeout on this.
-        if target < POS.value: goUp(target)
-        if target > POS.value: goDown(target)
+        if target < POS.value: goDown(target)
+        if target > POS.value: goUp(target)
         motors.setSpeeds(0, 0)
     finally:
       # Stop the motors, even if there is an exception
