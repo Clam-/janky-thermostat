@@ -122,6 +122,7 @@ def goDown(target):
         pass
 
 def go(target):
+    print(f"Current POS: {POS.value} Target: {target}")
     try:
         motors.setSpeeds(0, 0)
         motors.enable()
@@ -145,6 +146,7 @@ if __name__ == '__main__':
         temp, humidity = TEMP.measurements
         # Do things...
         newpos = round(pid(temp))
+        print(f"PID Return: {newpos}")
         if newpos != lastpos: settings.updatePostion(newpos) # store new location
         # move to new setpoint
         go(newpos)
