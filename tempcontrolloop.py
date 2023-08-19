@@ -144,7 +144,7 @@ if __name__ == '__main__':
         # measure
         temp, humidity = TEMP.measurements
         # Do things...
-        newpos = pid(temp)
+        newpos = round(pid(temp))
         if newpos != lastpos: settings.updatePostion(newpos) # store new location
         # move to new setpoint
         go(newpos)
