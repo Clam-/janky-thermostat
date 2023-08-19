@@ -121,7 +121,9 @@ def goUp(target):
 
 def goDown(target):
     motors.motor2.setSpeed(-SPEED)
+    print(f"Target: {target} Pos: {POS.value} Margin: {POS_MARGIN} Total: {target+POS_MARGIN} bool: {POS.value > target+POS_MARGIN}")
     while POS.value > target+POS_MARGIN:
+        print(f"Target: {target} Pos: {POS.value} Margin: {POS_MARGIN} Total: {target+POS_MARGIN} bool: {POS.value > target+POS_MARGIN}")
         pass
 
 def go(target):
