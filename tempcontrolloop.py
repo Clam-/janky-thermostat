@@ -22,7 +22,7 @@ TEMP = adafruit_sht4x.SHT4x(i2c)
 TEMP.mode = adafruit_sht4x.Mode.NOHEAT_HIGHPRECISION
 
 # use implied rowid
-TABLE_CREATE = "CREATE TABLE setting(target_temp REAL, last_position INT, onoff INT, \
+TABLE_CREATE = "CREATE TABLE IF NOT EXISTS setting(target_temp REAL, last_position INT, onoff INT, \
     kp REAL, ki REAL, kd REAL, lower INT, upper INT)"
 ROW_CREATE = "INSERT INTO setting VALUES(:target_temp, :last_position, :onoff, :ki, :kd, :kp, :lower, :upper)"
 SETTING_DEFAULTS = {
@@ -66,9 +66,7 @@ class Settings:
     def checkCreateDB(self):
         self.con = sqlite3.connect(self.settingsfile)
         self.con.row_factory = sqlite3.Row
-        # check if table exists:
-        if self.con.execute('''SELECT name FROM sqlite_master WHERE type='table' AND name='setting';''').rowcount < 1:
-            self.con.execute(TABLE_CREATE)
+        self.con.execute(TABLE_CREATE) # creates if not exists
         if self.con.execute('''SELECT * FROM setting WHERE rowid=1;''').rowcount < 1:
             self.con.execute(ROW_CREATE, SETTING_DEFAULTS)
 
