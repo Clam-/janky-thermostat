@@ -55,7 +55,8 @@ class Stats:
 
 # Settings management and storage
 class Settings:
-    def __init__(self, pid):
+    def __init__(self, pid, stats):
+        self.stats = stats
         self.settingsfile = "settings.sqlite"
         # if not file, setup schema and default row.
         self.checkCreateDB()
@@ -71,7 +72,7 @@ class Settings:
         if self.con.execute('''SELECT * FROM setting WHERE rowid=1;''').rowcount < 1:
             self.con.execute(ROW_CREATE, SETTING_DEFAULTS)
 
-    def update(self, stats, startup=False):
+    def update(self, startup=False):
         # query SQLite
         self.con.execute('''SELECT * FROM setting WHERE rowid=1;''')
         data = self.con.fetchone()
@@ -79,17 +80,19 @@ class Settings:
         self.lastpos = data["last_position"]
         # update pid with new settings.
         self.pid.setpoint = data["target_temp"]
-        stats.target = data["target_temp"]
         self.pid.tunings = (data["kp"], data["ki"], data["kd"])
-        stats.kp = data["kp"]
-        stats.ki = data["ki"]
-        stats.kd = data["kd"]
         self.pid.set_auto_mode(data["onoff"], data["last_position"])
-        stats.onoff = "on" if data["onoff"] else "off"
+        #not sure why I have that startup flag... I guess let's not update stats on startup??
+        if not startup:
+            self.stats.target = data["target_temp"]
+            self.stats.kp = data["kp"]
+            self.stats.ki = data["ki"]
+            self.stats.kd = data["kd"]
+            self.stats.onoff = "on" if data["onoff"] else "off"
 
-    def updatePostion(self, pos, stats):
+    def updatePostion(self, pos):
         self.con.execute('''UPDATE setting SET last_position = ? WHERE rowid=1;''', pos)
-        stats.position = pos
+        self.stats.position = pos
 
 
 # PID setup and options.
@@ -102,7 +105,7 @@ pid.differential_on_measurement = False # Maybe disable this if it's adjusting t
 
 
 stats = Stats()
-settings = Settings(pid)
+settings = Settings(pid, stats)
 
 
 lastupdate = time.monotonic()
@@ -141,7 +144,7 @@ if __name__ == '__main__':
         temp, humidity = TEMP.measurements
         # Do things...
         newpos = pid(temp)
-        if newpos != lastpos: settings.updatePostion(newpos, stats) # store new location
+        if newpos != lastpos: settings.updatePostion(newpos) # store new location
         # move to new setpoint
         go(newpos)
 
@@ -150,6 +153,6 @@ if __name__ == '__main__':
         stats.humidity.set = humidity
 
         # check for updated SQL values
-        settings.update(stats)
+        settings.update()
         time.sleep(max(2 - (currentupdate-lastupdate), 0)) # sleep at most 2 secs...
         lastupdate = currentupdate
