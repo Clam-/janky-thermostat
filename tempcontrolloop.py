@@ -94,7 +94,7 @@ class Settings:
             self.stats.onoff = "on" if data["onoff"] else "off"
 
     def updatePostion(self, pos):
-        self.con.execute('''UPDATE setting SET last_position = ? WHERE rowid=1;''', pos)
+        self.con.execute('''UPDATE setting SET last_position = ? WHERE rowid=1;''', (pos,))
         self.con.commit()
         self.stats.position = pos
 
