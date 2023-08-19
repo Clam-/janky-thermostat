@@ -37,7 +37,7 @@ SETTING_DEFAULTS = {
 }
 UPDATE_RATE = 10
 POS_MARGIN = 2
-SPEED = 100
+SPEED = 100000
 UPSPEED = -SPEED
 DOWNSPEED = SPEED
 
@@ -123,9 +123,7 @@ def goUp(target):
 
 def goDown(target):
     motors.motor2.setSpeed(DOWNSPEED)
-    print(f"Target: {target} Pos: {POS.value} Margin: {POS_MARGIN} Total: {target+POS_MARGIN} bool: {POS.value > target+POS_MARGIN}")
     while POS.value > target+POS_MARGIN:
-        print(f"Target: {target} Pos: {POS.value} Margin: {POS_MARGIN} Total: {target+POS_MARGIN} bool: {POS.value > target+POS_MARGIN}")
         pass
 
 def go(target):
