@@ -25,7 +25,7 @@ MAX = POS+10
 
 # Create the I2C bus # Create the ADC object using the I2C bus
 # Create single-ended input on channel 0
-chan = AnalogIn(ADS1015(I2C(SCL, SDA)), P0)
+chan = AnalogIn(ADS1015(I2C(board.D1, board.D0)), P0) # using i2c0
 
 try:
     motors.setSpeeds(0, 0)
