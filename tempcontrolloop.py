@@ -64,17 +64,17 @@ class Settings:
 
     def checkCreateDB(self):
         self.con = sqlite3.connect(self.settingsfile)
-        con.row_factory = sqlite3.Row
+        self.con.row_factory = sqlite3.Row
         # check if table exists:
-        if con.execute('''SELECT name FROM sqlite_master WHERE type='table' AND name='setting';''').rowcount < 1:
-            con.execute(TABLE_CREATE)
-        if con.execute('''SELECT * FROM setting WHERE rowid=1;''').rowcount < 1:
-            con.execute(ROW_CREATE, SETTING_DEFAULTS)
+        if self.con.execute('''SELECT name FROM sqlite_master WHERE type='table' AND name='setting';''').rowcount < 1:
+            self.con.execute(TABLE_CREATE)
+        if self.con.execute('''SELECT * FROM setting WHERE rowid=1;''').rowcount < 1:
+            self.con.execute(ROW_CREATE, SETTING_DEFAULTS)
 
     def update(self, stats, startup=False):
         # query SQLite
-        con.execute('''SELECT * FROM setting WHERE rowid=1;''')
-        data = con.fetchone()
+        self.con.execute('''SELECT * FROM setting WHERE rowid=1;''')
+        data = self.con.fetchone()
         # load last position for init
         self.lastpos = data["last_position"]
         # update pid with new settings.
@@ -88,7 +88,7 @@ class Settings:
         stats.onoff = "on" if data["onoff"] else "off"
 
     def updatePostion(self, pos, stats):
-        con.execute('''UPDATE setting SET last_position = ? WHERE rowid=1;''', pos)
+        self.con.execute('''UPDATE setting SET last_position = ? WHERE rowid=1;''', pos)
         stats.position = pos
 
 
