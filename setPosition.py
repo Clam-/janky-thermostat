@@ -32,12 +32,12 @@ try:
     motors.enable()
 
     if chan.value < MIN:
-        motors.motor2.setSpeed(-100000)
+        motors.motor2.setSpeed(-160000)
         while chan.value < MIN:
             print("\r{:>5}\t{:>5.3f}".format(chan.value, chan.voltage), end="")
         motors.setSpeeds(0, 0)
     if chan.value > MAX:
-        motors.motor2.setSpeed(100000)
+        motors.motor2.setSpeed(160000)
         while chan.value > MAX:
             print("\r{:>5}\t{:>5.3f}".format(chan.value, chan.voltage), end="")
         motors.setSpeeds(0, 0)

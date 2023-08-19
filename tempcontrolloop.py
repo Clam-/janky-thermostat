@@ -37,7 +37,7 @@ SETTING_DEFAULTS = {
 }
 UPDATE_RATE = 10
 POS_MARGIN = 2
-SPEED = 100000
+SPEED = 160000
 UPSPEED = -SPEED
 DOWNSPEED = SPEED
 
@@ -151,7 +151,7 @@ if __name__ == '__main__':
         temp, humidity = TEMP.measurements
         # Do things...
         newpos = round(pid(temp))
-        print(f"PID Return: {newpos}")
+        print(f"Temp: {temp} PID Return: {newpos}")
         if newpos != lastpos: settings.updatePostion(newpos) # store new location
         # move to new setpoint
         go(newpos)
