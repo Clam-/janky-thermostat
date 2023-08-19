@@ -2,4 +2,4 @@ adafruit-circuitpython-ads1x15
 adafruit-circuitpython-sht4x
 prometheus-client
 simple-pid
-python3-pigpio
+dual-mc33926 @ git+https://github.com/Clam-/dual-mc33926@main
