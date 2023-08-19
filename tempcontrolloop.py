@@ -66,14 +66,17 @@ class Settings:
     def checkCreateDB(self):
         self.con = sqlite3.connect(self.settingsfile)
         self.con.row_factory = sqlite3.Row
-        self.con.execute(TABLE_CREATE) # creates if not exists
-        if self.con.execute('''SELECT * FROM setting WHERE rowid=1;''').rowcount < 1:
+        # check if table exists:
+        res = self.con.execute('''SELECT name FROM sqlite_master WHERE type='table' AND name='setting';''').fetchall()
+        if len(res) < 1:
+            self.con.execute(TABLE_CREATE)
+        res = self.con.execute('''SELECT * FROM setting WHERE rowid=1;''').fetchone()
+        if .rowcount < 1:
             self.con.execute(ROW_CREATE, SETTING_DEFAULTS)
 
     def update(self, startup=False):
         # query SQLite
-        self.con.execute('''SELECT * FROM setting WHERE rowid=1;''')
-        data = self.con.fetchone()
+        data = self.con.execute('''SELECT * FROM setting WHERE rowid=1;''').fetchone()
         # load last position for init
         self.lastpos = data["last_position"]
         # update pid with new settings.
