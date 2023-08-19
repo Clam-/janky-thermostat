@@ -1,7 +1,7 @@
 from sys import argv, exit
 from dual_mc33926 import motors
 from time import sleep
-from board import SCL, SDA
+from board import D1, D0
 from busio import I2C
 from adafruit_ads1x15.ads1015 import ADS1015, P0
 from adafruit_ads1x15.analog_in import AnalogIn
@@ -25,7 +25,7 @@ MAX = POS+10
 
 # Create the I2C bus # Create the ADC object using the I2C bus
 # Create single-ended input on channel 0
-chan = AnalogIn(ADS1015(I2C(board.D1, board.D0)), P0) # using i2c0
+chan = AnalogIn(ADS1015(I2C(D1, D0)), P0) # using i2c0
 
 try:
     motors.setSpeeds(0, 0)
