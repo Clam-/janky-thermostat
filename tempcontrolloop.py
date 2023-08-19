@@ -6,6 +6,7 @@ import board
 import busio
 from adafruit_ads1x15.ads1015 import ADS1015, P0
 from adafruit_ads1x15.analog_in import AnalogIn
+import adafruit_sht4x
 
 import time
 import os.path
@@ -15,7 +16,10 @@ prometheus_client.REGISTRY.unregister(prometheus_client.GC_COLLECTOR)
 prometheus_client.REGISTRY.unregister(prometheus_client.PLATFORM_COLLECTOR)
 prometheus_client.REGISTRY.unregister(prometheus_client.PROCESS_COLLECTOR)
 
-POS = AnalogIn(ADS1015(busio.I2C(board.SCL, board.SDA)), P0)
+i2c = busio.I2C(board.SCL, board.SDA)
+POS = AnalogIn(ADS1015(i2c), P0)
+TEMP = adafruit_sht4x.SHT4x(i2c)
+TEMP.mode = adafruit_sht4x.Mode.NOHEAT_HIGHPRECISION
 
 # use implied rowid
 TABLE_CREATE = "CREATE TABLE setting(target_temp REAL, last_position INT, onoff INT, \
@@ -25,9 +29,9 @@ SETTING_DEFAULTS = {
     "target_temp": 22.0,
     "last_position": 8000,
     "onoff": 1,
-    "kp": -5,
-    "ki": -0.01,
-    "kd": -0.1,
+    "kp": -1.1,
+    "ki": -0.7,
+    "kd": -1.2,
     "lower": 1034,
     "upper": 24600
 }
@@ -45,6 +49,9 @@ class Stats:
         self.onoff = Enum('onoff', 'Heating',
                 states=['on', 'off'])
         self.onoff.state('on')
+        self.kp = Gauge('kp', 'Proportional')
+        self.ki = Gauge('ki', 'Integral')
+        self.kd = Gauge('kd', 'Derivative ')
 
 # Settings management and storage
 class Settings:
@@ -64,7 +71,7 @@ class Settings:
         if con.execute('''SELECT * FROM setting WHERE rowid=1;''').rowcount < 1:
             con.execute(ROW_CREATE, SETTING_DEFAULTS)
 
-    def update(self, startup=False):
+    def update(self, stats, startup=False):
         # query SQLite
         con.execute('''SELECT * FROM setting WHERE rowid=1;''')
         data = con.fetchone()
@@ -72,11 +79,17 @@ class Settings:
         self.lastpos = data["last_position"]
         # update pid with new settings.
         self.pid.setpoint = data["target_temp"]
+        stats.target = data["target_temp"]
         self.pid.tunings = (data["kp"], data["ki"], data["kd"])
+        stats.kp = data["kp"]
+        stats.ki = data["ki"]
+        stats.kd = data["kd"]
         self.pid.set_auto_mode(data["onoff"], data["last_position"])
+        stats.onoff = "on" if data["onoff"] else "off"
 
-    def updatePostion(self, pos):
+    def updatePostion(self, pos, stats):
         con.execute('''UPDATE setting SET last_position = ? WHERE rowid=1;''', pos)
+        stats.position = pos
 
 
 # PID setup and options.
@@ -108,7 +121,7 @@ def go(target):
     try:
         motors.setSpeeds(0, 0)
         motors.enable()
-
+        # use asyncio to set a timeout on this.
         if target < POS.value: goUp(target)
         if target > POS.value: goDown(target)
         motors.setSpeeds(0, 0)
@@ -118,24 +131,31 @@ def go(target):
       motors.setSpeeds(0, 0)
       motors.disable()
 
-
-
-
-
 if __name__ == '__main__':
     # Start up the server to expose the metrics.
     start_http_server(8000)
     lastpos = settings.lastpos
     while True:
         currentupdate = time.monotonic()
-        # do some stuff...
-
-        newpos = pid()
-        if newpos != lastpos: settings.updatePostion(newpos) # store new location
+        # measure
+        temp, humidity = sht.measurements
+        # Do things...
+        newpos = pid(temp)
+        if newpos != lastpos: settings.updatePostion(newpos, stats) # store new location
         # move to new setpoint
-        chan.value
+        go(newpos)
+
+        # Log stats...
+        Stats.temp.set = temp
+        Stats.humidity.set = humidity
+        Stats.temp.set = temp
+        Stats.humidity.set = humidity
+        Stats.temp.set = temp
+        Stats.humidity.set = humidity
+        Stats.temp.set = temp
+        Stats.humidity.set = humidity
 
         # check for updated SQL values
-        settings.update()
+        settings.update(stats)
         time.sleep(max(2 - (currentupdate-lastupdate), 0)) # sleep at most 2 secs...
         lastupdate = currentupdate
