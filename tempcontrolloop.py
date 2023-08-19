@@ -1,5 +1,5 @@
 # Run this at boot to continuously poll and adjust temp.
-from prometheus_client import start_http_server, Gauge, Enum
+import prometheus_client
 from simple_pid import PID
 from dual_mc33926 import motors
 import board
@@ -42,16 +42,16 @@ SPEED = 100
 # Metric reportings
 class Stats:
     def __init__(self):
-        self.temp = Gauge('temp', 'Temperature C')
-        self.humidity = Gauge('humid', 'Humidity %')
-        self.target = Gauge('target', 'Target C')
-        self.position = Gauge('position', 'Valve position')
-        self.onoff = Enum('onoff', 'Heating',
+        self.temp = prometheus_client.Gauge('temp', 'Temperature C')
+        self.humidity = prometheus_client.Gauge('humid', 'Humidity %')
+        self.target = prometheus_client.Gauge('target', 'Target C')
+        self.position = prometheus_client.Gauge('position', 'Valve position')
+        self.onoff = prometheus_client.Enum('onoff', 'Heating',
                 states=['on', 'off'])
         self.onoff.state('on')
-        self.kp = Gauge('kp', 'Proportional')
-        self.ki = Gauge('ki', 'Integral')
-        self.kd = Gauge('kd', 'Derivative ')
+        self.kp = prometheus_client.Gauge('kp', 'Proportional')
+        self.ki = prometheus_client.Gauge('ki', 'Integral')
+        self.kd = prometheus_client.Gauge('kd', 'Derivative ')
 
 # Settings management and storage
 class Settings:
@@ -133,7 +133,7 @@ def go(target):
 
 if __name__ == '__main__':
     # Start up the server to expose the metrics.
-    start_http_server(8000)
+    prometheus_client.start_http_server(8000)
     lastpos = settings.lastpos
     while True:
         currentupdate = time.monotonic()
