@@ -1,46 +1,48 @@
 <!doctype html>
 <title>Heat me pls</title>
+<form action="/" method="post">
+  <fieldset>
+    <legend>Auto Control</legend>
+    <div>
+      <input type="radio" id="auto_on" name="onoff" value="1" {{ "checked" if data["onoff"] else "" }} />
+      <label for="auto_on">On</label>
+    </div>
+    <div>
+      <input type="radio" id="auto_off" name="onoff" value="0" {{ "" if data["onoff"] else "checked" }} />
+      <label for="dewey">Off</label>
+    </div>
+    <div>
+      <label for="target_temp">Target Temp ({{ data["target_temp"] }})°C</label>
+      <input type="number" step="any" min="0" max="50" id="target_temp" name="target_temp" value="{{ data["target_temp"] }}"/>
+    </div>
+  </fieldset>
 
-<fieldset>
-  <legend>Auto Control</legend>
-  <div>
-    <input type="radio" id="auto_on" name="onoff" value="1" {{ "checked" if data["onoff"] else "" }} />
-    <label for="auto_on">On</label>
-  </div>
-  <div>
-    <input type="radio" id="auto_off" name="onoff" value="0" />
-    <label for="dewey">Off</label>
-  </div>
-  <div>
-    <label for="target_temp">Target Temp ({{ data["target_temp"] }})°C</label>
-    <input type="number" step="any" min="0" max="50" id="target_temp" name="target_temp" />
-  </div>
-</fieldset>
+  <fieldset>
+    <legend>PID Control</legend>
+    <div>
+      <label for="last_position">kp ({{ data["kp"] }})</label>
+      <input type="number" step="any" min="0" max="10000" id="kp" name="kp" value="{{ data["kp"] }}"/>
+    </div>
+    <div>
+      <label for="last_position">ki ({{ data["ki"] }})</label>
+      <input type="number" step="any" min="0" max="10000" id="ki" name="ki" value="{{ data["ki"] }}"/>
+    </div>
+    <div>
+      <label for="last_position">ki ({{ data["kd"] }})</label>
+      <input type="number" step="any" min="0" max="10000" id="kd" name="kd" value="{{ data["kd"] }}"/>
+    </div>
+  </fieldset>
 
-<fieldset>
-  <legend>PID Control</legend>
-  <div>
-    <label for="last_position">kp ({{ data["kp"] }})</label>
-    <input type="number" step="any" min="0" max="10000" id="kp" name="kp" />
-  </div>
-  <div>
-    <label for="last_position">ki ({{ data["ki"] }})</label>
-    <input type="number" step="any" min="0" max="10000" id="ki" name="ki" />
-  </div>
-  <div>
-    <label for="last_position">ki ({{ data["kd"] }})</label>
-    <input type="number" step="any" min="0" max="10000" id="kd" name="kd" />
-  </div>
-</fieldset>
-
-<fieldset>
-  <legend>Actuator range limit</legend>
-  <div>
-    <label for="last_position">lower ({{ data["lower"] }})</label>
-    <input type="number" step="any" min="0" max="10000" id="lower" name="lower" />
-  </div>
-  <div>
-    <label for="last_position">upper ({{ data["upper"] }})</label>
-    <input type="number" step="any" min="0" max="10000" id="upper" name="upper" />
-  </div>
-</fieldset>
+  <fieldset>
+    <legend>Actuator range limit</legend>
+    <div>
+      <label for="last_position">lower ({{ data["lower"] }})</label>
+      <input type="number" step="any" min="0" max="10000" id="lower" name="lower" value="{{ data["lower"] }}"/>
+    </div>
+    <div>
+      <label for="last_position">upper ({{ data["upper"] }})</label>
+      <input type="number" step="any" min="0" max="10000" id="upper" name="upper" value="{{ data["upper"] }}"/>
+    </div>
+  </fieldset>
+  <input type="submit" value="Set" />
+</form>

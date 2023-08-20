@@ -14,7 +14,7 @@ env setup...
 System wide packages for access to the gpio module.
 
 Install requirements
-```~/env/bin/install requirements.txt```
+```~/env/bin/pip install -r requirements.txt```
 
 Prometheus config snippet:
 ```
