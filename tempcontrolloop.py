@@ -89,16 +89,16 @@ class Settings:
         self.pid.set_auto_mode(data["onoff"], data["last_position"])
         #not sure why I have that startup flag... I guess let's not update stats on startup??
         if not startup:
-            self.stats.target = data["target_temp"]
-            self.stats.kp = data["kp"]
-            self.stats.ki = data["ki"]
-            self.stats.kd = data["kd"]
-            self.stats.onoff = "on" if data["onoff"] else "off"
+            self.stats.target.set(data["target_temp"])
+            self.stats.kp.set(data["kp"])
+            self.stats.ki.set(data["ki"])
+            self.stats.kd.set(data["kd"])
+            self.stats.onoff.set("on" if data["onoff"] else "off")
 
     def updatePostion(self, pos):
         self.con.execute('''UPDATE setting SET last_position = ? WHERE rowid=1;''', (pos,))
         self.con.commit()
-        self.stats.position = pos
+        self.stats.position.set(pos)
 
 
 # PID setup and options.
@@ -157,8 +157,8 @@ if __name__ == '__main__':
         go(newpos)
 
         # Log stats...
-        stats.temp.set = temp
-        stats.humidity.set = humidity
+        stats.temp.set(temp)
+        stats.humidity.set(humidity)
 
         # check for updated SQL values
         settings.update()
