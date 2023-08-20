@@ -93,7 +93,7 @@ class Settings:
             self.stats.kp.set(data["kp"])
             self.stats.ki.set(data["ki"])
             self.stats.kd.set(data["kd"])
-            self.stats.onoff.set("on" if data["onoff"] else "off")
+            self.stats.onoff.state("on" if data["onoff"] else "off")
 
     def updatePostion(self, pos):
         self.con.execute('''UPDATE setting SET last_position = ? WHERE rowid=1;''', (pos,))
