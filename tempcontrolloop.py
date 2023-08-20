@@ -29,14 +29,14 @@ SETTING_DEFAULTS = {
     "target_temp": 22.0,
     "last_position": 8000,
     "onoff": 1,
-    "kp": -1.1,
-    "ki": -0.7,
-    "kd": -1.2,
+    "kp": 1.1,
+    "ki": 0.7,
+    "kd": 1.2,
     "lower": 1034,
     "upper": 24600
 }
-UPDATE_RATE = 10
-POS_MARGIN = 2
+UPDATE_RATE = 15
+POS_MARGIN = 20
 SPEED = 160000
 UPSPEED = -SPEED
 DOWNSPEED = SPEED
@@ -143,7 +143,7 @@ def go(target):
 
 if __name__ == '__main__':
     # Start up the server to expose the metrics.
-    prometheus_client.start_http_server(8000)
+    prometheus_client.start_http_server(8008)
     lastpos = settings.lastpos
     while True:
         currentupdate = time.monotonic()
@@ -151,7 +151,7 @@ if __name__ == '__main__':
         temp, humidity = TEMP.measurements
         # Do things...
         newpos = round(pid(temp))
-        print(f"Temp: {temp} PID Return: {newpos}")
+        print(f"Target: {pid.setpoint} Temp: {temp} PID Return: {newpos}")
         if newpos != lastpos: settings.updatePostion(newpos) # store new location
         # move to new setpoint
         go(newpos)
