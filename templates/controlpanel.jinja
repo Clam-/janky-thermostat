@@ -37,11 +37,11 @@
     <legend>Actuator range limit</legend>
     <div>
       <label for="last_position">lower ({{ data["lower"] }})</label>
-      <input type="number" step="any" min="0" max="10000" id="lower" name="lower" value="{{ data["lower"] }}"/>
+      <input type="number" step="any" min="0" max="100000" id="lower" name="lower" value="{{ data["lower"] }}"/>
     </div>
     <div>
       <label for="last_position">upper ({{ data["upper"] }})</label>
-      <input type="number" step="any" min="0" max="10000" id="upper" name="upper" value="{{ data["upper"] }}"/>
+      <input type="number" step="any" min="0" max="100000" id="upper" name="upper" value="{{ data["upper"] }}"/>
     </div>
   </fieldset>
   <input type="submit" value="Set" />
