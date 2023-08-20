@@ -1,5 +1,5 @@
 import sqlite3
-from flask import g, Flask, render_template, request
+from flask import g, Flask, render_template, request, redirect, url_for
 
 DATABASE = 'settings.sqlite'
 ROW_UPDATE = "UPDATE setting SET target_temp = :target_temp, last_position = :last_position, \
