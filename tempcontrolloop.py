@@ -132,8 +132,8 @@ def go(target):
         motors.setSpeeds(0, 0)
         motors.enable()
         # use asyncio to set a timeout on this.
-        if target < POS.value: goDown(target)
-        if target > POS.value: goUp(target)
+        if POS.value > target+POS_MARGIN: goDown(target)
+        if POS.value < target-POS_MARGIN: goUp(target)
         motors.setSpeeds(0, 0)
     finally:
       # Stop the motors, even if there is an exception
