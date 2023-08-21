@@ -34,18 +34,22 @@
   </fieldset>
 <iframe src="http://192.168.25.250:3000/d-solo/e0ddf97a-ff4a-454e-b1b6-6738c5509cad/janky-pid?orgId=1&panelId=1" width="1280" height="400" frameborder="0"></iframe>
   <fieldset>
-    <legend>Actuator position/limit</legend>
+    <legend>Actuator control</legend>
     <div>
       <label for="last_position">last_position ({{ data["last_position"] }})</label>
       <input type="number" step="any" id="last_position" name="last_position" value="{{ data["last_position"] }}"/>
     </div>
     <div>
       <label for="lower">Lower limit ({{ data["lower"] }})</label>
-      <input type="number" step="any" id="lower" name="lower" value="{{ data["lower"] }}"/>
+      <input type="number" step="1" id="lower" name="lower" value="{{ data["lower"] }}"/>
     </div>
     <div>
       <label for="upper">Upper limit ({{ data["upper"] }})</label>
-      <input type="number" step="any" id="upper" name="upper" value="{{ data["upper"] }}"/>
+      <input type="number" step="1" id="upper" name="upper" value="{{ data["upper"] }}"/>
+    </div>
+    <div>
+      <label for="pos_margin">Position margin ({{ data["pos_margin"] }})</label>
+      <input type="number" step="1" id="pos_margin" name="pos_margin" value="{{ data["pos_margin"] }}"/>
     </div>
   </fieldset>
   <input type="submit" value="Set" />

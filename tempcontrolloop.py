@@ -33,10 +33,10 @@ SETTING_DEFAULTS = {
     "ki": 0.7,
     "kd": 1.2,
     "lower": 1034,
-    "upper": 24600
+    "upper": 24600,
+    "pos_margin" : 50
 }
 UPDATE_RATE = 15
-POS_MARGIN = 40
 SPEED = 160000
 UPSPEED = -SPEED
 DOWNSPEED = SPEED
@@ -81,6 +81,7 @@ class Settings:
     def update(self, startup=False):
         # query SQLite
         data = self.con.execute('''SELECT * FROM setting WHERE rowid=1;''').fetchone()
+        self.pos_margin = data["pos_margin"]
         # load last position for init
         self.lastpos = data["last_position"]
         # update pid with new settings.
@@ -118,12 +119,12 @@ lastupdate = time.monotonic()
 
 def goUp(target):
     motors.motor2.setSpeed(UPSPEED)
-    while POS.value < target-POS_MARGIN:
+    while POS.value < target-settings.pos_margin:
         pass
 
 def goDown(target):
     motors.motor2.setSpeed(DOWNSPEED)
-    while POS.value > target+POS_MARGIN:
+    while POS.value > target+settings.pos_margin:
         pass
 
 def go(target):
@@ -132,8 +133,8 @@ def go(target):
         motors.setSpeeds(0, 0)
         motors.enable()
         # use asyncio to set a timeout on this.
-        if POS.value > target+POS_MARGIN: goDown(target)
-        if POS.value < target-POS_MARGIN: goUp(target)
+        if POS.value > target+settings.pos_margin: goDown(target)
+        if POS.value < target-settings.pos_margin: goUp(target)
         motors.setSpeeds(0, 0)
     finally:
       # Stop the motors, even if there is an exception
