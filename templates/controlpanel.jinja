@@ -36,8 +36,12 @@
   <fieldset>
     <legend>Actuator control</legend>
     <div>
-      <label for="last_position">last_position ({{ data["last_position"] }})</label>
-      <input type="number" step="any" id="last_position" name="last_position" value="{{ data["last_position"] }}"/>
+      <label for="new_pos">Manual move to ({{ data["new_pos"] }})</label>
+      <input type="number" step="1" id="new_pos" name="new_pos" value="{{ data["new_pos"] }}"/>
+    </div>
+    <div>
+      <label for="last_position">Last position ({{ data["last_position"] }})</label>
+      <input type="number" step="1" id="last_position" name="last_position" value="{{ data["last_position"] }}"/>
     </div>
     <div>
       <label for="lower">Lower limit ({{ data["lower"] }})</label>
