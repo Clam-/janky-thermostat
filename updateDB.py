@@ -2,8 +2,6 @@ import sqlite3
 from tempcontrolloop import SETTING_DEFAULTS, TABLE_CREATE, ROW_CREATE
 
 DATA_GET = "SELECT * from setting;"
-ROW_UPDATE = '''UPDATE setting SET pos_margin = ? WHERE rowid=1;'''
-MARGIN_DEFAULT = 60
 settingsfile = "settings.sqlite"
 
 con = sqlite3.connect(settingsfile)

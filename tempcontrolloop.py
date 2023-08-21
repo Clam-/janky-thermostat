@@ -23,8 +23,9 @@ TEMP.mode = adafruit_sht4x.Mode.NOHEAT_HIGHPRECISION
 
 # use implied rowid
 TABLE_CREATE = "CREATE TABLE setting(target_temp REAL, last_position INT, onoff INT, \
-    kp REAL, ki REAL, kd REAL, lower INT, upper INT)"
-ROW_CREATE = "INSERT INTO setting VALUES(:target_temp, :last_position, :onoff, :ki, :kd, :kp, :lower, :upper)"
+    kp REAL, ki REAL, kd REAL, lower INT, upper INT, pos_margin INT)"
+# This MUST be in table create order...
+ROW_CREATE = "INSERT INTO setting VALUES(:target_temp, :last_position, :onoff, :kp, :ki, :kd, :lower, :upper, :pos_margin)"
 SETTING_DEFAULTS = {
     "target_temp": 22.0,
     "last_position": 8000,
