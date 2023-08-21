@@ -21,15 +21,15 @@
     <legend>PID Control</legend>
     <div>
       <label for="kp">kp ({{ data["kp"] }})</label>
-      <input type="number" step="any" min="0" max="10000" id="kp" name="kp" value="{{ data["kp"] }}"/>
+      <input type="number" step="any" min="0" max="20000" id="kp" name="kp" value="{{ data["kp"] }}"/>
     </div>
     <div>
       <label for="ki">ki ({{ data["ki"] }})</label>
-      <input type="number" step="any" min="0" max="10000" id="ki" name="ki" value="{{ data["ki"] }}"/>
+      <input type="number" step="any" min="0" max="20000" id="ki" name="ki" value="{{ data["ki"] }}"/>
     </div>
     <div>
       <label for="kd">kd ({{ data["kd"] }})</label>
-      <input type="number" step="any" min="0" max="10000" id="kd" name="kd" value="{{ data["kd"] }}"/>
+      <input type="number" step="any" min="0" max="20000" id="kd" name="kd" value="{{ data["kd"] }}"/>
     </div>
   </fieldset>
 <iframe src="http://192.168.25.250:3000/d-solo/e0ddf97a-ff4a-454e-b1b6-6738c5509cad/janky-pid?orgId=1&panelId=1" width="1280" height="400" frameborder="0"></iframe>
