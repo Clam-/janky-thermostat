@@ -13,7 +13,7 @@
     </div>
     <div>
       <label for="target_temp">Target Temp ({{ data["target_temp"] }})°C</label>
-      <input type="number" step="any" min="0" max="50" id="target_temp" name="target_temp" value="{{ data["target_temp"] }}"/>
+      <input type="number" step="any" id="target_temp" name="target_temp" value="{{ data["target_temp"] }}"/>
     </div>
   </fieldset>
 <iframe src="http://192.168.25.250:3000/d-solo/bfdf5822-4b39-4248-8ed1-94d932e2614f/janky-thermostat?orgId=1&panelId=1" width="1280" height="500" frameborder="0"></iframe>
@@ -21,15 +21,15 @@
     <legend>PID Control</legend>
     <div>
       <label for="kp">kp ({{ data["kp"] }})</label>
-      <input type="number" step="any" min="0" max="20000" id="kp" name="kp" value="{{ data["kp"] }}"/>
+      <input type="number" step="any" id="kp" name="kp" value="{{ data["kp"] }}"/>
     </div>
     <div>
       <label for="ki">ki ({{ data["ki"] }})</label>
-      <input type="number" step="any" min="0" max="20000" id="ki" name="ki" value="{{ data["ki"] }}"/>
+      <input type="number" step="any" id="ki" name="ki" value="{{ data["ki"] }}"/>
     </div>
     <div>
       <label for="kd">kd ({{ data["kd"] }})</label>
-      <input type="number" step="any" min="0" max="20000" id="kd" name="kd" value="{{ data["kd"] }}"/>
+      <input type="number" step="any" id="kd" name="kd" value="{{ data["kd"] }}"/>
     </div>
   </fieldset>
 <iframe src="http://192.168.25.250:3000/d-solo/e0ddf97a-ff4a-454e-b1b6-6738c5509cad/janky-pid?orgId=1&panelId=1" width="1280" height="400" frameborder="0"></iframe>
@@ -37,15 +37,15 @@
     <legend>Actuator position/limit</legend>
     <div>
       <label for="last_position">last_position ({{ data["last_position"] }})</label>
-      <input type="number" step="any" min="0" max="100000" id="last_position" name="last_position" value="{{ data["last_position"] }}"/>
+      <input type="number" step="any" id="last_position" name="last_position" value="{{ data["last_position"] }}"/>
     </div>
     <div>
       <label for="lower">Lower limit ({{ data["lower"] }})</label>
-      <input type="number" step="any" min="0" max="100000" id="lower" name="lower" value="{{ data["lower"] }}"/>
+      <input type="number" step="any" id="lower" name="lower" value="{{ data["lower"] }}"/>
     </div>
     <div>
       <label for="upper">Upper limit ({{ data["upper"] }})</label>
-      <input type="number" step="any" min="0" max="100000" id="upper" name="upper" value="{{ data["upper"] }}"/>
+      <input type="number" step="any" id="upper" name="upper" value="{{ data["upper"] }}"/>
     </div>
   </fieldset>
   <input type="submit" value="Set" />
