@@ -151,7 +151,7 @@ class Controller:
             # Do things...
             newpos = round(self.pid(temp))
             if newpos != self.settings.last_position:
-                print(f"Target: { self.pid.setpoint } Temp: {self. temp } Current->Target: { self.POS.value }->{ self.newpos }")
+                print(f"Target: { self.pid.setpoint } Temp: { temp } Current->Target: { self.POS.value }->{ newpos }")
                 self.settings.updatePostion(newpos) # store new location
                 # move to new setpoint
                 self.go(newpos)
