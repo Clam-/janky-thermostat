@@ -16,11 +16,6 @@ prometheus_client.REGISTRY.unregister(prometheus_client.GC_COLLECTOR)
 prometheus_client.REGISTRY.unregister(prometheus_client.PLATFORM_COLLECTOR)
 prometheus_client.REGISTRY.unregister(prometheus_client.PROCESS_COLLECTOR)
 
-i2c = busio.I2C(board.D1, board.D0)  # using i2c0
-POS = AnalogIn(ADS1015(i2c), P0)
-TEMP = adafruit_sht4x.SHT4x(i2c)
-TEMP.mode = adafruit_sht4x.Mode.NOHEAT_HIGHPRECISION
-
 # use implied rowid
 TABLE_CREATE = "CREATE TABLE setting(target_temp REAL, last_position INT, onoff INT, \
     kp REAL, ki REAL, kd REAL, lower INT, upper INT, pos_margin INT)"
@@ -102,67 +97,74 @@ class Settings:
         self.con.commit()
         self.stats.position.set(pos)
 
+class Controller:
+    def __init__(self, settings):
+        self.settings = settings
+        self.stats = settings.stats
+        i2c = busio.I2C(board.D1, board.D0)  # using i2c0
+        self.POS = AnalogIn(ADS1015(i2c), P0)
+        self.TEMP = adafruit_sht4x.SHT4x(i2c)
+        self.TEMP.mode = adafruit_sht4x.Mode.NOHEAT_HIGHPRECISION
+        # PID setup and options.
+        self.pid = PID(settings["kp"], settings["ki"], settings["kd"],
+            setpoint=settings["last_position"], output_limits=(settings["lower"],settings["upper"]), auto_mode=settings["onoff"])
+        self.pid.sample_time = UPDATE_RATE  # set PID update rate UPDATE_RATE
+        self.pid.proportional_on_measurement = True
+        # allow setpoint change spikes to get us to temp faster (?)
+        self.pid.differential_on_measurement = False # Maybe disable this if it's adjusting the motors is too noisy
 
-# PID setup and options.
-pid = PID(SETTING_DEFAULTS["kp"], SETTING_DEFAULTS["ki"], SETTING_DEFAULTS["kd"],
-    setpoint=1, output_limits=(SETTING_DEFAULTS["lower"],SETTING_DEFAULTS["upper"]), auto_mode=False)
-pid.sample_time = UPDATE_RATE  # set PID update rate UPDATE_RATE
-pid.proportional_on_measurement = True
-# allow setpoint change spikes to get us to temp faster (?)
-pid.differential_on_measurement = False # Maybe disable this if it's adjusting the motors is too noisy
+    def goUp(self, target):
+        motors.motor2.setSpeed(UPSPEED)
+        while self.POS.value < target:
+            pass
 
+    def goDown(self, target):
+        motors.motor2.setSpeed(DOWNSPEED)
+        while self.POS.value > target:
+            pass
 
-stats = Stats()
-settings = Settings(pid, stats)
+    def go(self, target):
+        print(f"Current POS: { self.POS.value } Target: { target }")
+        try:
+            motors.setSpeeds(0, 0)
+            motors.enable()
+            # use asyncio to set a timeout on this.
+            if self.POS.value > target+self.settings.pos_margin: self.goDown(target+self.settings.pos_margin)
+            if self.POS.value < target-self.settings.pos_margin: self.goUp(target-self.settings.pos_margin)
+            motors.setSpeeds(0, 0)
+        finally:
+          # Stop the motors, even if there is an exception
+          # or the user presses Ctrl+C to kill the process.
+          motors.setSpeeds(0, 0)
+          motors.disable()
 
+    def loop(self):
+        lastupdate = time.monotonic()
+        lastpos = self.settings.lastpos
+        while True:
+            currentupdate = time.monotonic()
+            # measure
+            temp, humidity = self.TEMP.measurements
+            # Do things...
+            newpos = round(self.pid(temp))
+            print(f"Target: { self.pid.setpoint } Temp: {self. temp } PID Return: { self.newpos }")
+            if newpos != lastpos: self.settings.updatePostion(newpos) # store new location
+            # move to new setpoint
+            self.go(newpos)
 
-lastupdate = time.monotonic()
+            # Log stats...
+            self.stats.temp.set(temp)
+            self.stats.humidity.set(humidity)
 
-def goUp(target):
-    motors.motor2.setSpeed(UPSPEED)
-    while POS.value < target-settings.pos_margin:
-        pass
+            # check for updated SQL values
+            self.settings.update()
+            time.sleep(max(2 - (currentupdate-lastupdate), 0)) # sleep at most 2 secs...
+            lastupdate = currentupdate
 
-def goDown(target):
-    motors.motor2.setSpeed(DOWNSPEED)
-    while POS.value > target+settings.pos_margin:
-        pass
-
-def go(target):
-    print(f"Current POS: {POS.value} Target: {target}")
-    try:
-        motors.setSpeeds(0, 0)
-        motors.enable()
-        # use asyncio to set a timeout on this.
-        if POS.value > target+settings.pos_margin: goDown(target)
-        if POS.value < target-settings.pos_margin: goUp(target)
-        motors.setSpeeds(0, 0)
-    finally:
-      # Stop the motors, even if there is an exception
-      # or the user presses Ctrl+C to kill the process.
-      motors.setSpeeds(0, 0)
-      motors.disable()
 
 if __name__ == '__main__':
     # Start up the server to expose the metrics.
     prometheus_client.start_http_server(8008)
-    lastpos = settings.lastpos
-    while True:
-        currentupdate = time.monotonic()
-        # measure
-        temp, humidity = TEMP.measurements
-        # Do things...
-        newpos = round(pid(temp))
-        print(f"Target: {pid.setpoint} Temp: {temp} PID Return: {newpos}")
-        if newpos != lastpos: settings.updatePostion(newpos) # store new location
-        # move to new setpoint
-        go(newpos)
-
-        # Log stats...
-        stats.temp.set(temp)
-        stats.humidity.set(humidity)
-
-        # check for updated SQL values
-        settings.update()
-        time.sleep(max(2 - (currentupdate-lastupdate), 0)) # sleep at most 2 secs...
-        lastupdate = currentupdate
+    stats = Stats()
+    control = Controller(Settings(pid, stats))
+    control.loop()
