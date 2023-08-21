@@ -121,12 +121,12 @@ class Controller:
     def goUp(self, target):
         motors.motor2.setSpeed(UPSPEED)
         while self.POS.value < target:
-            pass
+            time.sleep(0.05)
 
     def goDown(self, target):
         motors.motor2.setSpeed(DOWNSPEED)
         while self.POS.value > target:
-            pass
+            time.sleep(0.05)
 
     def go(self, target):
         try:
