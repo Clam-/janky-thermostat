@@ -18,9 +18,9 @@ prometheus_client.REGISTRY.unregister(prometheus_client.PROCESS_COLLECTOR)
 
 # use implied rowid
 TABLE_CREATE = "CREATE TABLE setting(target_temp REAL, last_position INT, onoff INT, \
-    kp REAL, ki REAL, kd REAL, lower INT, upper INT, pos_margin INT)"
+    kp REAL, ki REAL, kd REAL, lower INT, upper INT, pos_margin INT, new_pos INT)"
 # This MUST be in table create order...
-ROW_CREATE = "INSERT INTO setting VALUES(:target_temp, :last_position, :onoff, :kp, :ki, :kd, :lower, :upper, :pos_margin)"
+ROW_CREATE = "INSERT INTO setting VALUES(:target_temp, :last_position, :onoff, :kp, :ki, :kd, :lower, :upper, :pos_margin, :new_pos)"
 SETTING_DEFAULTS = {
     "target_temp": 22.0,
     "last_position": 8000,
@@ -30,7 +30,8 @@ SETTING_DEFAULTS = {
     "kd": 1.2,
     "lower": 1034,
     "upper": 24600,
-    "pos_margin" : 50
+    "pos_margin" : 50,
+    "new_pos": 0
 }
 UPDATE_RATE = 15
 SPEED = 160000
@@ -53,12 +54,12 @@ class Stats:
 
 # Settings management and storage
 class Settings:
-    def __init__(self, pid, stats):
+    def __init__(self, stats):
         self.stats = stats
         self.settingsfile = "settings.sqlite"
         # if not file, setup schema and default row.
         self.checkCreateDB()
-        self.pid = pid
+        self.pid = None
         self.update(startup=True)
 
     def checkCreateDB(self):
@@ -79,7 +80,7 @@ class Settings:
         data = self.con.execute('''SELECT * FROM setting WHERE rowid=1;''').fetchone()
         self.pos_margin = data["pos_margin"]
         # load last position for init
-        self.lastpos = data["last_position"]
+        self.last_position = data["last_position"]
         # update pid with new settings.
         self.pid.setpoint = data["target_temp"]
         self.pid.tunings = (data["kp"], data["ki"], data["kd"])
@@ -91,6 +92,9 @@ class Settings:
             self.stats.ki.set(data["ki"])
             self.stats.kd.set(data["kd"])
             self.stats.onoff.state("on" if data["onoff"] else "off")
+        else:
+            self.pid = PID(data["kp"], data["ki"], data["kd"], setpoint=data["target_temp"],
+                output_limits=(data["lower"], data["upper"]), auto_mode=data["onoff"], starting_output=data["last_position"])
 
     def updatePostion(self, pos):
         self.con.execute('''UPDATE setting SET last_position = ? WHERE rowid=1;''', (pos,))
@@ -98,16 +102,16 @@ class Settings:
         self.stats.position.set(pos)
 
 class Controller:
-    def __init__(self, settings):
-        self.settings = settings
-        self.stats = settings.stats
+    def __init__(self, stats):
+        self.stats = stats
+        self.settings = settings(stats)
+        self.pid = settings.pid
+
         i2c = busio.I2C(board.D1, board.D0)  # using i2c0
         self.POS = AnalogIn(ADS1015(i2c), P0)
         self.TEMP = adafruit_sht4x.SHT4x(i2c)
         self.TEMP.mode = adafruit_sht4x.Mode.NOHEAT_HIGHPRECISION
-        # PID setup and options.
-        self.pid = PID(settings["kp"], settings["ki"], settings["kd"],
-            setpoint=settings["last_position"], output_limits=(settings["lower"],settings["upper"]), auto_mode=settings["onoff"])
+        # PID extra options.
         self.pid.sample_time = UPDATE_RATE  # set PID update rate UPDATE_RATE
         self.pid.proportional_on_measurement = True
         # allow setpoint change spikes to get us to temp faster (?)
@@ -124,7 +128,6 @@ class Controller:
             pass
 
     def go(self, target):
-        print(f"Current POS: { self.POS.value } Target: { target }")
         try:
             motors.setSpeeds(0, 0)
             motors.enable()
@@ -140,31 +143,34 @@ class Controller:
 
     def loop(self):
         lastupdate = time.monotonic()
-        lastpos = self.settings.lastpos
         while True:
             currentupdate = time.monotonic()
             # measure
             temp, humidity = self.TEMP.measurements
             # Do things...
             newpos = round(self.pid(temp))
-            print(f"Target: { self.pid.setpoint } Temp: {self. temp } PID Return: { self.newpos }")
-            if newpos != lastpos: self.settings.updatePostion(newpos) # store new location
-            # move to new setpoint
-            self.go(newpos)
+            if newpos != self.settings.last_position:
+                print(f"Target: { self.pid.setpoint } Temp: {self. temp } Current->Target: { self.POS.value }->{ self.newpos }")
+                self.settings.updatePostion(newpos) # store new location
+                # move to new setpoint
+                self.go(newpos)
+                self.settings.last_position = newpos
 
             # Log stats...
             self.stats.temp.set(temp)
             self.stats.humidity.set(humidity)
 
-            # check for updated SQL values
+            # check for updated SQL values and manually move if new_pos is set...
             self.settings.update()
-            time.sleep(max(2 - (currentupdate-lastupdate), 0)) # sleep at most 2 secs...
+            if self.settings.newpos != 0:
+                self.go(self.settings.newpos)
+                self.settings.newpos = 0
+            time.sleep(max(0.5 - (currentupdate-lastupdate), 0)) # sleep at most 0.5 secs... shouldn't be off the PID period by more than 0.5... probs...
             lastupdate = currentupdate
 
 
 if __name__ == '__main__':
     # Start up the server to expose the metrics.
     prometheus_client.start_http_server(8008)
-    stats = Stats()
-    control = Controller(Settings(pid, stats))
+    control = Controller(Stats())
     control.loop()
