@@ -81,6 +81,7 @@ class Settings:
         self.pos_margin = data["pos_margin"]
         # load last position for init
         self.last_position = data["last_position"]
+        self.new_pos = data["new_pos"]
         #not sure why I have that startup flag... I guess let's not update stats on startup??
         if startup:
             self.pid = PID(data["kp"], data["ki"], data["kd"], setpoint=data["target_temp"],
@@ -104,8 +105,8 @@ class Settings:
 class Controller:
     def __init__(self, stats):
         self.stats = stats
-        self.settings = settings(stats)
-        self.pid = settings.pid
+        self.settings = Settings(stats)
+        self.pid = self.settings.pid
 
         i2c = busio.I2C(board.D1, board.D0)  # using i2c0
         self.POS = AnalogIn(ADS1015(i2c), P0)
@@ -162,9 +163,9 @@ class Controller:
 
             # check for updated SQL values and manually move if new_pos is set...
             self.settings.update()
-            if self.settings.newpos != 0:
-                self.go(self.settings.newpos)
-                self.settings.newpos = 0
+            if self.settings.new_pos != 0:
+                self.go(self.settings.new_pos)
+                self.settings.new_pos = 0
             time.sleep(max(0.5 - (currentupdate-lastupdate), 0)) # sleep at most 0.5 secs... shouldn't be off the PID period by more than 0.5... probs...
             lastupdate = currentupdate
 
