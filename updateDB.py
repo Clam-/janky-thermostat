@@ -8,7 +8,7 @@ settingsfile = "settings.sqlite"
 
 con = sqlite3.connect(settingsfile)
 con.row_factory = sqlite3.Row
-data = con.execute(DATA_GET)
+data = dict(con.execute(DATA_GET).fetchone())
 data = SETTING_DEFAULTS | data
 con.execute("DROP TABLE setting;")
 con.commit()
