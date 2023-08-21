@@ -81,20 +81,20 @@ class Settings:
         self.pos_margin = data["pos_margin"]
         # load last position for init
         self.last_position = data["last_position"]
-        # update pid with new settings.
-        self.pid.setpoint = data["target_temp"]
-        self.pid.tunings = (data["kp"], data["ki"], data["kd"])
-        self.pid.set_auto_mode(data["onoff"], data["last_position"])
         #not sure why I have that startup flag... I guess let's not update stats on startup??
-        if not startup:
+        if startup:
+            self.pid = PID(data["kp"], data["ki"], data["kd"], setpoint=data["target_temp"],
+                output_limits=(data["lower"], data["upper"]), auto_mode=data["onoff"], starting_output=self.last_position)
+        else:
             self.stats.target.set(data["target_temp"])
             self.stats.kp.set(data["kp"])
             self.stats.ki.set(data["ki"])
             self.stats.kd.set(data["kd"])
             self.stats.onoff.state("on" if data["onoff"] else "off")
-        else:
-            self.pid = PID(data["kp"], data["ki"], data["kd"], setpoint=data["target_temp"],
-                output_limits=(data["lower"], data["upper"]), auto_mode=data["onoff"], starting_output=data["last_position"])
+        # update pid with new settings.
+        self.pid.setpoint = data["target_temp"]
+        self.pid.tunings = (data["kp"], data["ki"], data["kd"])
+        self.pid.set_auto_mode(data["onoff"], data["last_position"])
 
     def updatePostion(self, pos):
         self.con.execute('''UPDATE setting SET last_position = ? WHERE rowid=1;''', (pos,))
