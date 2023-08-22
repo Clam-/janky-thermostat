@@ -114,9 +114,8 @@ class Controller:
         self.TEMP.mode = adafruit_sht4x.Mode.NOHEAT_HIGHPRECISION
         # PID extra options.
         self.pid.sample_time = UPDATE_RATE  # set PID update rate UPDATE_RATE
-        self.pid.proportional_on_measurement = True
-        # allow setpoint change spikes to get us to temp faster (?)
-        self.pid.differential_on_measurement = False # Maybe disable this if it's adjusting the motors is too noisy
+        self.pid.proportional_on_measurement = False
+        self.pid.differential_on_measurement = True
 
     def goUp(self, target):
         motors.motor2.setSpeed(UPSPEED)
