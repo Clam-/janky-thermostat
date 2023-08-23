@@ -60,6 +60,7 @@ class Settings:
         # if not file, setup schema and default row.
         self.checkCreateDB()
         self.pid = None
+        self.new_pos = None
         self.update(startup=True)
 
     def checkCreateDB(self):
@@ -149,7 +150,8 @@ class Controller:
             # measure
             temp, humidity = self.TEMP.measurements
             # Do things...
-            newpos = round(self.pid(temp))
+            newpos = self.pid(temp)
+            if newpos is not None: newpos = round(newpos)
             if self.settings.onoff and newpos != self.settings.last_position:
                 print(f"Target: { self.pid.setpoint } Temp: { temp } Current->Target: { self.POS.value }->{ newpos }")
                 self.settings.updatePostion(newpos) # store new location
@@ -164,6 +166,7 @@ class Controller:
             # check for updated SQL values and manually move if new_pos is set...
             self.settings.update()
             if self.settings.new_pos != 0:
+                print(f"Manually moving to { self.settings.new_pos }")
                 self.go(self.settings.new_pos)
                 self.settings.new_pos = 0
             time.sleep(max(0.5 - (currentupdate-lastupdate), 0)) # sleep at most 0.5 secs... shouldn't be off the PID period by more than 0.5... probs...
