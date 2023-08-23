@@ -82,16 +82,17 @@ class Settings:
         # load last position for init
         self.last_position = data["last_position"]
         self.new_pos = data["new_pos"]
+        self.onoff = data["onoff"]
         #not sure why I have that startup flag... I guess let's not update stats on startup??
         if startup:
             self.pid = PID(data["kp"], data["ki"], data["kd"], setpoint=data["target_temp"],
-                output_limits=(data["lower"], data["upper"]), auto_mode=data["onoff"], starting_output=self.last_position)
+                output_limits=(data["lower"], data["upper"]), auto_mode=self.onoff, starting_output=self.last_position)
         else:
             self.stats.target.set(data["target_temp"])
             self.stats.kp.set(data["kp"])
             self.stats.ki.set(data["ki"])
             self.stats.kd.set(data["kd"])
-            self.stats.onoff.state("on" if data["onoff"] else "off")
+            self.stats.onoff.state("on" if self.onoff else "off")
         # update pid with new settings.
         self.pid.setpoint = data["target_temp"]
         self.pid.tunings = (data["kp"], data["ki"], data["kd"])
@@ -149,7 +150,7 @@ class Controller:
             temp, humidity = self.TEMP.measurements
             # Do things...
             newpos = round(self.pid(temp))
-            if newpos != self.settings.last_position:
+            if self.settings.onoff and newpos != self.settings.last_position:
                 print(f"Target: { self.pid.setpoint } Temp: { temp } Current->Target: { self.POS.value }->{ newpos }")
                 self.settings.updatePostion(newpos) # store new location
                 # move to new setpoint
