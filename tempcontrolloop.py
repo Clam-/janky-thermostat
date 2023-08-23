@@ -75,6 +75,10 @@ class Settings:
         if res is None:
             self.con.execute(ROW_CREATE, SETTING_DEFAULTS)
             self.con.commit()
+    def resetNewPos(self):
+        self.con.execute('''UPDATE setting SET new_pos = ? WHERE rowid=1;''', (0,))
+        self.con.commit()
+        self.new_pos = 0
 
     def update(self, startup=False):
         # query SQLite
@@ -168,7 +172,7 @@ class Controller:
             if self.settings.new_pos != 0:
                 print(f"Manually moving to { self.settings.new_pos }")
                 self.go(self.settings.new_pos)
-                self.settings.new_pos = 0
+                self.settings.resetNewPos()
             time.sleep(max(0.5 - (currentupdate-lastupdate), 0)) # sleep at most 0.5 secs... shouldn't be off the PID period by more than 0.5... probs...
             lastupdate = currentupdate
 
