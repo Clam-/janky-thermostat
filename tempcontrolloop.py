@@ -120,7 +120,7 @@ class Controller:
         self.TEMP.mode = adafruit_sht4x.Mode.NOHEAT_HIGHPRECISION
         # PID extra options.
         self.pid.sample_time = UPDATE_RATE  # set PID update rate UPDATE_RATE
-        self.pid.proportional_on_measurement = False
+        self.pid.proportional_on_measurement = True
         self.pid.differential_on_measurement = True
 
     def goUp(self, target):
