@@ -109,7 +109,10 @@ class Settings:
     def updatePostion(self, pos):
         self.con.execute('''UPDATE setting SET last_position = ? WHERE rowid=1;''', (pos,))
         self.con.commit()
-        (self.stats.ap, self.stats.ai, self.stats.ad) = self.pid.components
+        components = self.pid.components
+        self.stats.ap.set(components[0])
+        self.stats.ai.set(components[1])
+        self.stats.ad.set(components[2])
         self.stats.position.set(pos)
 
 class Controller:
