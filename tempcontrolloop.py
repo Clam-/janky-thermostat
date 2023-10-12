@@ -51,6 +51,9 @@ class Stats:
         self.kp = prometheus_client.Gauge('kp', 'Proportional')
         self.ki = prometheus_client.Gauge('ki', 'Integral')
         self.kd = prometheus_client.Gauge('kd', 'Derivative ')
+        self.ap = prometheus_client.Gauge('ap', "Calc'd Prop.") #--
+        self.ai = prometheus_client.Gauge('ai', "Calc'd Int.")
+        self.ad = prometheus_client.Gauge('ad', "Calc'd Deriv.")
 
 # Settings management and storage
 class Settings:
@@ -106,6 +109,7 @@ class Settings:
     def updatePostion(self, pos):
         self.con.execute('''UPDATE setting SET last_position = ? WHERE rowid=1;''', (pos,))
         self.con.commit()
+        (self.stats.ap, self.stats.ai, self.stats.ad) = self.pid.components
         self.stats.position.set(pos)
 
 class Controller:
