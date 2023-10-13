@@ -105,14 +105,15 @@ class Settings:
         self.pid.setpoint = data["target_temp"]
         self.pid.tunings = (data["kp"], data["ki"], data["kd"])
         self.pid.set_auto_mode(data["onoff"], data["last_position"])
-
-    def updatePostion(self, pos):
-        self.con.execute('''UPDATE setting SET last_position = ? WHERE rowid=1;''', (pos,))
-        self.con.commit()
+        # log PID component values:
         components = self.pid.components
         self.stats.ap.set(components[0])
         self.stats.ai.set(components[1])
         self.stats.ad.set(components[2])
+
+    def updatePostion(self, pos):
+        self.con.execute('''UPDATE setting SET last_position = ? WHERE rowid=1;''', (pos,))
+        self.con.commit()
         self.stats.position.set(pos)
 
 class Controller:
@@ -127,8 +128,8 @@ class Controller:
         self.TEMP.mode = adafruit_sht4x.Mode.NOHEAT_HIGHPRECISION
         # PID extra options.
         self.pid.sample_time = UPDATE_RATE  # set PID update rate UPDATE_RATE
-        self.pid.proportional_on_measurement = True
-        self.pid.differential_on_measurement = True
+        self.pid.proportional_on_measurement = False
+        self.pid.differential_on_measurement = False
 
     def goUp(self, target):
         motors.motor2.setSpeed(UPSPEED)
