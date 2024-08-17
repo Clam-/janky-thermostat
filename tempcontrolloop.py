@@ -172,7 +172,7 @@ class Controller:
         if sched:
             if sched["timestamp"] is not self.currentsched:
                 self.pid.setpoint = sched["temp"]
-                self.con.execute('''UPDATE setting SET target_temp = ? WHERE rowid=1;''', (sched["temp"],))
+                self.settings.con.execute('''UPDATE setting SET target_temp = ? WHERE rowid=1;''', (sched["temp"],))
                 self.currentsched = sched["timestamp"]
 
     def loop(self):
