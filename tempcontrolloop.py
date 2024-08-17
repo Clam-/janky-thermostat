@@ -19,6 +19,8 @@ prometheus_client.REGISTRY.unregister(prometheus_client.PROCESS_COLLECTOR)
 # use implied rowid
 TABLE_CREATE = "CREATE TABLE setting(target_temp REAL, last_position INT, onoff INT, \
     kp REAL, ki REAL, kd REAL, lower INT, upper INT, pos_margin INT, new_pos INT)"
+TABLE_SCHED_CREATE = "CREATE TABLE schedule(timestamp TEXT PRIMARY KEY, temp REAL)"
+
 # This MUST be in table create order...
 ROW_CREATE = "INSERT INTO setting VALUES(:target_temp, :last_position, :onoff, :kp, :ki, :kd, :lower, :upper, :pos_margin, :new_pos)"
 SETTING_DEFAULTS = {
@@ -74,6 +76,10 @@ class Settings:
         if res is None:
             self.con.execute(TABLE_CREATE)
             self.con.commit()
+        res = self.con.execute('''SELECT name FROM sqlite_master WHERE type='table' AND name='schedule';''').fetchone()
+        if res is None:
+            self.con.execute(TABLE_SCHED_CREATE)
+            self.con.commit()
         res = self.con.execute('''SELECT * FROM setting WHERE rowid=1;''').fetchone()
         if res is None:
             self.con.execute(ROW_CREATE, SETTING_DEFAULTS)
@@ -115,6 +121,9 @@ class Settings:
         self.con.execute('''UPDATE setting SET last_position = ? WHERE rowid=1;''', (pos,))
         self.con.commit()
         self.stats.position.set(pos)
+    
+    def fetchsched(self, currstamp):
+        return self.con.execute('''SELECT * FROM schedule WHERE timestamp >= ?;''', (currstamp,)).fetchone()
 
 class Controller:
     def __init__(self, stats):
@@ -130,6 +139,8 @@ class Controller:
         self.pid.sample_time = UPDATE_RATE  # set PID update rate UPDATE_RATE
         self.pid.proportional_on_measurement = False
         self.pid.differential_on_measurement = False
+
+        self.currentsched = ""
 
     def goUp(self, target):
         motors.motor2.setSpeed(UPSPEED)
@@ -155,10 +166,22 @@ class Controller:
           motors.setSpeeds(0, 0)
           motors.disable()
 
+    def checkSetSchedule(self):
+        currstamp = time.strftime("%H:%M")
+        sched = self.settings.fetchsched(currstamp)
+        if sched:
+            if sched["timestamp"] is not self.currentsched:
+                self.pid.setpoint = sched["temp"]
+                self.con.execute('''UPDATE setting SET target_temp = ? WHERE rowid=1;''', (sched["temp"],))
+                self.currentsched = sched["timestamp"]
+
     def loop(self):
         lastupdate = time.monotonic()
+        lastschedcheck = time.monotonic()
+        
         while True:
             currentupdate = time.monotonic()
+            currentschedcheck = time.monotonic()
             # measure
             temp, humidity = self.TEMP.measurements
             # Do things...
@@ -183,7 +206,10 @@ class Controller:
                 self.settings.resetNewPos()
             time.sleep(max(0.5 - (currentupdate-lastupdate), 0)) # sleep at most 0.5 secs... shouldn't be off the PID period by more than 0.5... probs...
             lastupdate = currentupdate
-
+            if (currentschedcheck - lastschedcheck > 60):
+                self.checkSetSchedule()
+                lastschedcheck = currentschedcheck
+            
 
 if __name__ == '__main__':
     # Start up the server to expose the metrics.

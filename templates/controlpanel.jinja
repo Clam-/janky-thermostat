@@ -1,5 +1,59 @@
 <!doctype html>
+<head>
+  <script>
+function getRandomInt(max) { return Math.floor(Math.random() * max); }
+function createStampCell(i) {
+  const input = document.createElement("input");
+  input.type = "time";
+  input.id = "STAMP"+i;
+  input.name = "STAMP"+i;
+  return input;
+}
+function createTempCell() {
+  const input = document.createElement("input");
+  input.type = "number";
+  input.step = "any";
+  input.id = "VALUE"+i;
+  input.name = "VALUE"+i;
+  return input;
+}
+function addrow() {
+  let elem = '';
+  let i = getRandomInt(1000000);
+  do {
+    elem = document.getElementById("ROW"+i);
+    i = getRandomInt(1000000);
+  } while (elem !== null);
+  let table = getElementById("scheduletable");
+  let newrow = table.insertRow(-1);
+  let newcell = newrow.insertCell();
+  newcell.appendChild(createStampCell(i));
+  newcell = newrow.insertCell();
+  newcell.appendChild(createTempCell(i));
+}
+function delrow(idx) {
+  document.getElementById("ROW"+idx)?.remove();
+}
+  </script>
+</head>
 <title>Heat me pls</title>
+<form action="/sched" method="post">
+  <table id="scheduletable">
+    <tr>
+      <th>Timestamp (HH:MM)</th>
+      <th>Temp °C</th>
+      <th><a href="javascript:addrow()">➕</a></th>
+    </tr>
+    {% for idx, sched in schedule %}
+    <tr id="{{ 'ROW'+idx }}">
+      <td><input type="time" id="{{'STAMP'+idx}}" name="{{'STAMP'+idx}}" value="{{ sched['timestamp'] }}"/></td>
+      <td><input type="number" step="any" id="{{'VALUE'+idx}}" name="{{'VALUE'+idx}}" value="{{ sched['temp'] }}"/></td>
+      <td><a href="javascript:delrow({{idx}})">➖</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+  <input type="submit" value="Save Schedule" />
+</form>
 <form action="/" method="post">
   <fieldset>
     <legend>Auto Control</legend>
@@ -13,7 +67,7 @@
     </div>
     <div>
       <label for="target_temp">Target Temp ({{ data["target_temp"] }})°C</label>
-      <input type="number" step="any" id="target_temp" name="target_temp" value="{{ data["target_temp"] }}"/>
+      <input type="number" step="any" id="target_temp" name="target_temp" value="{{ data['target_temp'] }}"/>
     </div>
   </fieldset>
 <iframe src="http://192.168.25.250:3000/d-solo/bfdf5822-4b39-4248-8ed1-94d932e2614f/janky-thermostat?orgId=1&panelId=1" width="1280" height="500" frameborder="0"></iframe>
