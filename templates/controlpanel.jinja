@@ -9,7 +9,7 @@ function createStampCell(i) {
   input.name = "STAMP"+i;
   return input;
 }
-function createTempCell() {
+function createTempCell(i) {
   const input = document.createElement("input");
   input.type = "number";
   input.step = "any";
@@ -24,7 +24,7 @@ function addrow() {
     elem = document.getElementById("ROW"+i);
     i = getRandomInt(1000000);
   } while (elem !== null);
-  let table = getElementById("scheduletable");
+  let table = document.getElementById("scheduletable");
   let newrow = table.insertRow(-1);
   let newcell = newrow.insertCell();
   newcell.appendChild(createStampCell(i));
@@ -45,9 +45,9 @@ function delrow(idx) {
       <th><a href="javascript:addrow()">➕</a></th>
     </tr>
     {% for idx, sched in schedule %}
-    <tr id="{{ 'ROW'+idx }}">
-      <td><input type="time" id="{{'STAMP'+idx}}" name="{{'STAMP'+idx}}" value="{{ sched['timestamp'] }}"/></td>
-      <td><input type="number" step="any" id="{{'VALUE'+idx}}" name="{{'VALUE'+idx}}" value="{{ sched['temp'] }}"/></td>
+    <tr id="{{ 'ROW%s' % idx }}">
+      <td><input type="time" id="{{'STAMP%s' % idx}}" name="{{'STAMP%s' % idx}}" value="{{ sched['timestamp'] }}"/></td>
+      <td><input type="number" step="any" id="{{'VALUE%s' % idx}}" name="{{'VALUE%s' % idx}}" value="{{ sched['temp'] }}"/></td>
       <td><a href="javascript:delrow({{idx}})">➖</a></td>
     </tr>
     {% endfor %}

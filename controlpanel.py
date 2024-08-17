@@ -39,7 +39,7 @@ def parseStamp(s):
     return time.strftime("%H:%M", time.strptime(s, "%H:%M"))
 
 @app.post('/sched')
-def update():
+def updatesched():
     formdata = request.form
     stampmap = {}
     # convert form into a temp dict, and then array of named values to be inserted
