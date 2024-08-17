@@ -123,7 +123,7 @@ class Settings:
         self.stats.position.set(pos)
     
     def fetchsched(self, currstamp):
-        return self.con.execute('''SELECT * FROM schedule WHERE timestamp >= ?;''', (currstamp,)).fetchone()
+        return self.con.execute('''SELECT * FROM schedule WHERE timestamp <= ? ORDER BY timestamp DESC;''', (currstamp, )).fetchone()
 
 class Controller:
     def __init__(self, stats):
@@ -173,11 +173,12 @@ class Controller:
             if sched["timestamp"] is not self.currentsched:
                 self.pid.setpoint = sched["temp"]
                 self.settings.con.execute('''UPDATE setting SET target_temp = ? WHERE rowid=1;''', (sched["temp"],))
+                self.settings.con.commit()
                 self.currentsched = sched["timestamp"]
 
     def loop(self):
         lastupdate = time.monotonic()
-        lastschedcheck = time.monotonic()
+        lastschedcheck = 0
         
         while True:
             currentupdate = time.monotonic()
