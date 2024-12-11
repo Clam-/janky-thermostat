@@ -165,7 +165,8 @@ class MoveThread(threading.Thread):
         motors.enable()
         f = open("posdump.csv", encoding='utf-8', mode="w")
         writer = csv.writer(f)
-        writer.writerow(["Target", "Raw", "offset/2.0"])
+        writer = None
+        if writer: writer.writerow(["Target", "Raw", "offset/2.0"])
         pos = self.POS.value
         lastmove = time.monotonic()
         try:
@@ -179,20 +180,13 @@ class MoveThread(threading.Thread):
                 npos = self.POS.value
                 # hectic filtering (lol why am I this jank)
                 if self.moving == UP:
-                    writer.writerow([self.target, npos, 
-                            clamp(pos, npos, -(self.offset-1), self.offset),
-                        ])
+                    if writer: writer.writerow([self.target, npos, clamp(pos, npos, -(self.offset-1), self.offset)])
                     pos = clamp(pos, npos, -(self.offset-1), self.offset)
-
                 elif self.moving == DOWN:
-                    writer.writerow([self.target, npos, 
-                            clamp(pos, npos, self.offset, -(self.offset-1)),
-                        ])
+                    if writer: writer.writerow([self.target, npos, clamp(pos, npos, self.offset, -(self.offset-1))])
                     pos = clamp(pos, npos, self.offset, -(self.offset-1))
                 else:
-                    writer.writerow([self.target, npos, 
-                            clamp(pos, npos, -(self.offset-1), -(self.offset-1)),
-                        ])
+                    if writer: writer.writerow([self.target, npos, clamp(pos, npos, -(self.offset-1), -(self.offset-1))])
                     pos = clamp(pos, npos, 5, 5)
                 
                 #print(self.target, round(pos), npos)
