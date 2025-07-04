@@ -4,7 +4,8 @@ import time
 
 DATABASE = 'settings.sqlite'
 ROW_UPDATE = "UPDATE setting SET target_temp = :target_temp, last_position = :last_position, \
-  onoff = :onoff, ki = :ki, kd = :kd, kp = :kp, lower = :lower, upper = :upper, pos_margin = :pos_margin, new_pos = :new_pos WHERE rowid=1;"
+  onoff = :onoff, ki = :ki, kd = :kd, kp = :kp, lower = :lower, upper = :upper, pos_margin = :pos_margin, \
+  new_pos = :new_pos, speed = :speed WHERE rowid=1;"
 SCHED_INSERT = "INSERT INTO schedule VALUES(:timestamp, :temp)"
 app = Flask(__name__)
 
